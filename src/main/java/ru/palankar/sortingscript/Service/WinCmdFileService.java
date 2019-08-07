@@ -57,6 +57,7 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
             logger.error("MOVED FILES DOES NOT EXISTS");
     }
 
+    // TODO: 05.08.2019 Добавить проверку на существование подобного файла в директории?
     /**
      * Перемещает файл из одной директории в другую
      * @param   file    исходный файл
@@ -70,7 +71,7 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
             File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part");
             logger.info("Moving " + renamed.getName() + "...");
 
-            runCmd("move \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
+            runCmd("move /Y \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
 
             File movedStart = new File(into.toString() + "\\" + FilenameUtils.getName(renamed.getName()));
             updateFiles(renamed, movedStart);

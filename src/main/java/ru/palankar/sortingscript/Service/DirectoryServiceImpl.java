@@ -2,16 +2,14 @@ package ru.palankar.sortingscript.Service;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.json.simple.JSONObject;
 import ru.palankar.sortingscript.Model.Directories;
-
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Properties;
 
 public class DirectoryServiceImpl implements DirectoryService {
     private Logger logger;
     private Directories directories;
+    private JSONService jsonService;
 
     public DirectoryServiceImpl() {
         logger = LogManager.getLogger(DirectoryServiceImpl.class);
@@ -25,6 +23,7 @@ public class DirectoryServiceImpl implements DirectoryService {
     public DirectoryServiceImpl(String properties) {
         logger = LogManager.getLogger(DirectoryServiceImpl.class);
         directories = Directories.getInstance();
+        jsonService = new JSONServiceImpl();
         init(properties);
     }
     /**
@@ -35,15 +34,15 @@ public class DirectoryServiceImpl implements DirectoryService {
     public void init(String properties) {
         try {
             logger.info("Initializing properties...");
-            Properties prop = new Properties();
-            prop.load(new FileInputStream(properties));
 
-            setUnsortedDirectory(prop.getProperty("UnsortedDirectory"));
-            logger.info("Direction property " + prop.getProperty("UnsortedDirectory") + " initialised");
-            setSortedDirectory(prop.getProperty("SortedDirectory"));
-            logger.info("Direction property " + prop.getProperty("SortedDirectory") + " initialised");
-        } catch (IOException e) {
-            logger.error("PROPERTY FILE directories.properties COULD NOT FOUND");
+            JSONObject dirJSON = jsonService.getObj(properties);
+
+            setUnsortedDirectory(dirJSON.get("UnsortedDirectory").toString());
+            logger.info("Direction property " + dirJSON.get("UnsortedDirectory").toString() + " initialised");
+            setSortedDirectory(dirJSON.get("SortedDirectory").toString());
+            logger.info("Direction property " + dirJSON.get("SortedDirectory").toString() + " initialised");
+        } catch (Exception e) {
+            logger.error("PROPERTY FILE directories.json COULD NOT FOUND");
             System.exit(0);
             // TODO: 30.07.2019 Пока что все коды возврата на 0, потому что логирую. Потом разобраться и подобрать
         }
