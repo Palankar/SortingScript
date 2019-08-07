@@ -34,10 +34,11 @@ public interface FileService {
 
     /**
      * Переименовывает переданный в аргументы файл
-     * @param   file    исходный файл
-     * @param   newName новое имя файла
+     * @param   file        исходный файл
+     * @param   newName     новое имя файла
+     * @param   toUpdate    обновлять ли список
      */
-    File renameFile(File file, String newName);
+    File renameFile(File file, String newName, boolean toUpdate);
 
     /**
      * Заменяет файл, уже имеющийся в коллекции на новый

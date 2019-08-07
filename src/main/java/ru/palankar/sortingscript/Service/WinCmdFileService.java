@@ -6,14 +6,10 @@ import org.apache.log4j.Logger;
 import ru.palankar.sortingscript.Model.JSONList;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class WinCmdFileService extends CommandServiceImpl implements FileService {
     private Logger logger = LogManager.getLogger(WinCmdFileService.class);
@@ -40,14 +36,20 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
 
         List<File> movedFiles = new ArrayList<>();
         for (File file : files) {
-            File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part");
+            File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part", true);
             logger.info("Moving " + renamed.getName() + "...");
+
+            for (File fileIn : into.toFile().listFiles()) {
+                if (fileIn.getName().equals(file.getName())) {
+                    renameFile(fileIn, FilenameUtils.getName(fileIn.getName()) + ".part", false);
+                }
+            }
 
             runCmd("move \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
 
             File movedStart = new File(into.toString() + "\\" + FilenameUtils.getName(renamed.getName()));
             updateFiles(renamed, movedStart);
-            File movedFinal = renameFile(movedStart, FilenameUtils.getBaseName(renamed.getName()));
+            File movedFinal = renameFile(movedStart, FilenameUtils.getBaseName(renamed.getName()), true);
             movedFiles.add(movedFinal);
         }
 
@@ -57,7 +59,6 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
             logger.error("MOVED FILES DOES NOT EXISTS");
     }
 
-    // TODO: 05.08.2019 Добавить проверку на существование подобного файла в директории?
     /**
      * Перемещает файл из одной директории в другую
      * @param   file    исходный файл
@@ -68,14 +69,20 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
     public void moveFile(File file, Path from, Path into) {
         logger.info("Moving file from " + from.toString() + " to " + into.toString());
 
-            File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part");
-            logger.info("Moving " + renamed.getName() + "...");
+        File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part", true);
+        logger.info("Moving " + renamed.getName() + "...");
 
-            runCmd("move /Y \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
+        for (File fileIn : into.toFile().listFiles()) {
+            if (fileIn.getName().equals(file.getName())) {
+                renameFile(fileIn, FilenameUtils.getName(fileIn.getName()) + ".part", false);
+            }
+        }
 
-            File movedStart = new File(into.toString() + "\\" + FilenameUtils.getName(renamed.getName()));
-            updateFiles(renamed, movedStart);
-            File movedFinal = renameFile(movedStart, FilenameUtils.getBaseName(renamed.getName()));
+        runCmd("move /Y \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
+
+        File movedStart = new File(into.toString() + "\\" + FilenameUtils.getName(renamed.getName()));
+        updateFiles(renamed, movedStart);
+        File movedFinal = renameFile(movedStart, FilenameUtils.getBaseName(renamed.getName()), true);
 
         if (movedFinal.exists())
             logger.info("Moving files complete");
@@ -93,13 +100,13 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
     @Override
     public void saveFile(File file, Path into) {
         logger.info("Start saving " + file.getName() + " to " + into.toString());
-        File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part");
+        File renamed = renameFile(file, FilenameUtils.getName(file.getName()) + ".part", true);
         logger.info("Coping " + renamed.getPath() + " to " + into.toString() + "...");
 
         runCmd("copy \"" + renamed.getPath() + "\" \"" + into.toString() + "\"");
 
         File savedStart = new File(into.toString() + "\\" + FilenameUtils.getName(renamed.getName()));
-        File savedFinal = renameFile(savedStart, FilenameUtils.getBaseName(renamed.getName()));
+        File savedFinal = renameFile(savedStart, FilenameUtils.getBaseName(renamed.getName()), true);
         if (savedFinal.exists())
             logger.info("Saving correct");
         else
@@ -108,18 +115,20 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
 
     /**
      * Использует для переименования команду cmd: 'rename fileName newFileName'
-     * @param   file    исходный файл
-     * @param   newName новое имя файла
+     * @param   file        исходный файл
+     * @param   newName     новое имя файла
+     * @param   toUpdate    обновлять ли список
      * @return  создает File с новым именем по пути старого и возвращает его
      */
     @Override
-    public File renameFile(File file, String newName) {
+    public File renameFile(File file, String newName, boolean toUpdate) {
         runCmd("rename \"" + file.getPath() + "\" " + newName);
 
         File renamed = new File(FilenameUtils.getFullPath(file.getPath()) + newName);
 
         if (renamed.exists()) {
-            updateFiles(file, renamed);
+            if (toUpdate)
+                updateFiles(file, renamed);
         } else {
             logger.error("FILE " + renamed.getName() + " DOES NOT EXISTS");
             return null;
@@ -145,7 +154,8 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
             if (!Collections.replaceAll(userFilesList.getList(), oldFile, newFile))
                 logger.warn("Failed to update files");
         } else*/ {
-            jsonService.updateJSON(oldFile, newFile);
+            if (oldFile.getName().contains(".json"))
+                jsonService.updateJSON(oldFile, newFile);
         }
     }
 
@@ -159,7 +169,7 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
         logger.info("Anti-virus scanning...");
 
         for (File file : files.values()) {
-            File renamed = renameFile(file, file.getName() + ".checking");
+            File renamed = renameFile(file, file.getName() + ".checking", true);
             logger.info("Scanning " + renamed);
 
 
@@ -184,9 +194,9 @@ public class WinCmdFileService extends CommandServiceImpl implements FileService
                     moveFile(jsonToFile, dirService.getUnsortedDirectory(), errorsDir.toPath());
                 }
 
-                renameFile(renamed, FilenameUtils.removeExtension(renamed.getName()));
+                renameFile(renamed, FilenameUtils.removeExtension(renamed.getName()), true);
             } else {
-                renameFile(renamed, FilenameUtils.removeExtension(renamed.getName()));
+                renameFile(renamed, FilenameUtils.removeExtension(renamed.getName()), true);
             }
 
         }

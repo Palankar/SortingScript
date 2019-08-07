@@ -138,7 +138,8 @@ public class ScriptBody {
                 }
 
                 //перемещает с заменой
-                cmd.runCmd("move /Y \"" + fileFromJson.getPath() + "\" \"" + docName.toString() + "\"");
+                //cmd.runCmd("move /Y \"" + fileFromJson.getPath() + "\" \"" + docName.toString() + "\"");
+                fileService.moveFile(fileFromJson, dirService.getUnsortedDirectory(), docName);
 
                 Path done = Paths.get(dirService.getUnsortedDirectory() + "\\done");
                 if (!done.toFile().exists()) {
@@ -146,7 +147,8 @@ public class ScriptBody {
                         logger.error("Can't create directory " + done.toString());
                 }
 
-                cmd.runCmd("move /Y \"" + json.getPath() + "\" \"" + done.toString() + "\"");
+                fileService.moveFile(json, dirService.getUnsortedDirectory(), done);
+                //cmd.runCmd("move /Y \"" + json.getPath() + "\" \"" + done.toString() + "\"");
 
 
                 // TODO: 02.08.2019 Зачем перемещению указывать начальную директорию, если можно указать ее внутри как директорию файла
