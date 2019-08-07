@@ -34,7 +34,7 @@ public class JSONServiceImpl implements JSONService {
         try (FileWriter writer = new FileWriter(json.getPath())){
             writer.write(object.toJSONString());
         } catch (IOException e) {
-            System.out.println("Ошибка");
+            System.out.println("Error adding param to " + json.getName());
         }
     }
 

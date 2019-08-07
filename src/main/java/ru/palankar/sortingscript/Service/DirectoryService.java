@@ -5,33 +5,33 @@ import java.nio.file.Path;
 public interface DirectoryService {
 
     /**
-     * Инициалиизация директорий из .properties файла
+     * Инициалиизация директорий из .json файла
      * Файл обязательно должен лежать в одной директории со скриптом
      * @param   properties  путь к файлу с указаниями директорий
      */
     void init(String properties);
 
     /**
-     * Получить путь стартовой директории
+     * Получить путь неотсортированной директории
      * @return  стартовая директория в формате Path
      */
     Path getUnsortedDirectory();
 
     /**
-     * Задать путь стартовой директории
-     * @param   firstDirectory  путь стартовой директории
+     * Задать путь неотсортированной директории
+     * @param   UnsortedDirectory  путь неотсортированной директории
      */
-    void setUnsortedDirectory(String firstDirectory);
+    void setUnsortedDirectory(String UnsortedDirectory);
 
     /**
-     * Получить путь директории с антивирусом
-     * @return  директория с анитвирусом в формате Path
+     * Получить путь директории с отсортированными файлами
+     * @return  директория с отсортированными файлами в формате Path
      */
     Path getSortedDirectory();
 
     /**
-     * Задать путь директории с антивирусом
-     * @param   secondDirectory путь директории с антивирусом
+     * Задать путь директории с отсортированными файлами
+     * @param   SortedDirectory путь директории с отсортированными файлами
      */
-    void setSortedDirectory(String secondDirectory);
+    void setSortedDirectory(String SortedDirectory);
 }

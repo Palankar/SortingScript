@@ -8,7 +8,5 @@ public class FirstStarter {
 
     public static void main(String[] args) {
         scriptBody.startScript();
-        //String str = "wddd231/*-w2_\\/*wd&?\"цв\"\"\" цв:<wdwd>+-wdw";
-        //System.out.println(str.replaceAll("[\\\\/:\"*?<>|]+", "_"));
     }
 }

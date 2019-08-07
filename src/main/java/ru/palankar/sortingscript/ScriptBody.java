@@ -14,23 +14,19 @@ import java.util.*;
 
 // TODO: 02.08.2019 Метод для получения параметров с логированием
 // TODO: 02.08.2019 Метод создания директории с логированием
-// TODO: 02.08.2019 Набор всех файлов и соотношение к JSON по параметрам
 
 public class ScriptBody {
     //"src/main/resources/directories.json" - для запуска с IDE
-    //System.getProperty("user.dir") + "\\directories.json" - для хапуска с билда
+    //System.getProperty("user.dir") + "\\directories.json" - для запуска с билда
     private static final String PATH_TO_DIR_PROPERTIES = "src/main/resources/directories.json";
     private static final String PATH_TO_DOC_TYPES = "src/main/resources/documentTypes.json";
-
-
-    CommandService cmd = new CommandServiceImpl();
 
     private Logger logger = LogManager.getLogger(ScriptBody.class);
     private DirectoryService dirService;
     private FileService fileService;
     private JSONList jsonList;
     private JSONService jsonService = new JSONServiceImpl();
-    private List<File> allfiles = new ArrayList<>();
+    private List<File> allFiles = new ArrayList<>();
 
     public ScriptBody() {
         dirService = new DirectoryServiceImpl(PATH_TO_DIR_PROPERTIES);
@@ -47,7 +43,7 @@ public class ScriptBody {
             logger.warn("There are no files in " + dirService.getUnsortedDirectory().toString());
             return;
         }
-        allfiles.addAll(Arrays.asList(files));
+        allFiles.addAll(Arrays.asList(files));
 
         if (jsonList.getList().size() > 0) {
 
@@ -63,14 +59,11 @@ public class ScriptBody {
             for (File json : jsonList.getList()) {
                 JSONObject obj = jsonService.getObj(json.getPath());
 
-                System.out.println(json.getName());
-
-
                 if (obj.containsKey("fileName")) {
                     fileName = obj.get("fileName").toString();
 
                     boolean isContains = false;
-                    for (File file : allfiles) {
+                    for (File file : allFiles) {
                         if (file.getName().contains(fileName)) {
                             fileFromJson = file;
                             isContains = true;
@@ -137,9 +130,7 @@ public class ScriptBody {
                     continue;
                 }
 
-                //перемещает с заменой
-                //cmd.runCmd("move /Y \"" + fileFromJson.getPath() + "\" \"" + docName.toString() + "\"");
-                fileService.moveFile(fileFromJson, dirService.getUnsortedDirectory(), docName);
+                fileService.moveFile(fileFromJson, docName);
 
                 Path done = Paths.get(dirService.getUnsortedDirectory() + "\\done");
                 if (!done.toFile().exists()) {
@@ -147,25 +138,8 @@ public class ScriptBody {
                         logger.error("Can't create directory " + done.toString());
                 }
 
-                fileService.moveFile(json, dirService.getUnsortedDirectory(), done);
-                //cmd.runCmd("move /Y \"" + json.getPath() + "\" \"" + done.toString() + "\"");
-
-
-                // TODO: 02.08.2019 Зачем перемещению указывать начальную директорию, если можно указать ее внутри как директорию файла
-                // TODO: 05.08.2019 Ошибка при перемещении файла. Переименовываются не те файлы, файл сам содержит не то имя
-
-                System.out.println("fileName: " + fileName);
-                System.out.println("fileFromJson: " + fileFromJson.getName());
-                System.out.println("OrganisationINN: " + OrganisationINN);
-                System.out.println("OrganisationName: " + OrganisationName);
-                System.out.println(dirOrg);
-                System.out.println(projectId);
-                System.out.println(docName);
-                System.out.println("DocumentGroupID: " + DocumentGroupID);
+                fileService.moveFile(json, done);
             }
-
-            System.out.println(jsonList.getList());
-
         } else {
             logger.warn("Required files not found");
         }

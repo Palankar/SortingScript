@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 
 /**
  * Директории, по которым перемещаются файлы.
- * Задаются через .properties файл.
+ * Задаются через .json файл.
  */
 public class Directories {
     private static Directories instance;
